@@ -17,24 +17,7 @@ namespace NanoGramApp.ViewModel
 
         public Grid? GameGrid { get; private set; }
         public string? gameStatus { get; private set; }
-        public List<int>[] RowHints { get; private set; }
-        public List<int>[] ColumnHints { get; private set; }
         public string Flag => (game.Flag ? "█" : "X");
-        public string RowHintsString
-        {
-            get
-            {
-                return string.Join(", ", RowHints.Select(r => string.Join(" ", r)));
-            }
-        }
-
-        public string ColumnHintsString
-        {
-            get
-            {
-                return string.Join(", ", ColumnHints.Select(c => string.Join(" ", c)));
-            }
-        }
 
 
         public string? GameStatus
@@ -57,49 +40,67 @@ namespace NanoGramApp.ViewModel
         public NanoGramViewModel()
         {
             game = new GameBoard(BoardSize, Lives);
-            RowHints = game.Rows;
-            ColumnHints = game.Columns;
 
             gameStatus = "Nothing is clicked";
             CellTappedCommand = new Command<int>(OnCellTapped);
             ToggleModeCommand = new Command(OnToggleMode);
             GameGrid = GenerateDynamicGrid();
         }
-
         private Grid GenerateDynamicGrid()
         {
             var grid = new Grid
             {
-                RowSpacing = 1,
-                ColumnSpacing = 1
+                RowSpacing = 0,
+                ColumnSpacing = 0
             };
 
-            for (int i = 0; i < BoardSize; i++)
+            // Define Row and Column Sizes
+            for (int i = 0; i <= BoardSize; i++) // One extra for hints
             {
                 grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Star });
                 grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
             }
 
-            for (int row = 0; row < BoardSize; row++)
+            // Add Hints (First Row and First Column)
+            for (int i = 1; i <= BoardSize; i++) // Start at 1 to skip (0,0)
             {
-                for (int col = 0; col < BoardSize; col++)
+                // Column Hint (Above the Grid)
+                Border colHint = CreateHintCell(i-1, true);
+                Grid.SetRow(colHint, 0);
+                Grid.SetColumn(colHint, i);
+                grid.Children.Add(colHint);
+
+                // Row Hint (Left of the Grid)
+                Border rowHint = CreateHintCell(i-1, false);
+                Grid.SetRow(rowHint, i);
+                Grid.SetColumn(rowHint, 0);
+                grid.Children.Add(rowHint);
+            }
+
+            // Add Game Board Cells
+            for (int row = 1; row <= BoardSize; row++)
+            {
+                for (int col = 1; col <= BoardSize; col++)
                 {
-                    int index = row * BoardSize + col;
+                    int index = (row - 1) * BoardSize + (col - 1);
 
                     Button button = new Button
                     {
-                        BindingContext = game.GuessdBoard[row, col],
-                        WidthRequest = 60,
-                        HeightRequest = 60,
+                        BindingContext = game.GuessdBoard[row - 1, col - 1],
+                        WidthRequest = 300 / BoardSize,
+                        HeightRequest = 300 / BoardSize,
                         FontSize = 25,
                         BackgroundColor = Colors.Transparent,
                         BorderColor = Colors.Black,
-                        BorderWidth = 2,
+                        BorderWidth = 1,
+
+                        CornerRadius = 0, // 🔹 Makes the button edges square
+                        Padding = 0,
+                        Margin = 0
                     };
 
                     button.SetBinding(Button.TextProperty, "Value");
                     button.SetBinding(Button.IsEnabledProperty, "IsEnabled");
-
                     button.Command = CellTappedCommand;
                     button.CommandParameter = index;
 
@@ -110,6 +111,37 @@ namespace NanoGramApp.ViewModel
             }
 
             return grid;
+        }
+
+        // Helper Method to Create Hint Cells
+        private Border CreateHintCell(int index, bool IsCol)
+        {
+            List<int> Hints = (IsCol ? game.Columns : game.Rows)[index];
+            string text = " ";
+            for (int i = 0; i < Hints.Count; i++)
+            {
+                text += (IsCol ? "\n" : " ") + Hints[i].ToString();
+            }
+
+            return new Border
+            {
+                Stroke = Colors.Black,
+                StrokeThickness = 2,
+                BackgroundColor = Colors.Transparent,
+                HeightRequest = (IsCol ? 60 : 25),
+                WidthRequest = (IsCol ? 25 : 60),
+                Padding = 0,
+                Margin = 0,
+                Content = new Label
+                {
+                    Text = text,
+                    FontSize = 15,
+                    HorizontalTextAlignment = (IsCol ? TextAlignment.Center : TextAlignment.End),
+                    VerticalTextAlignment = (IsCol ? TextAlignment.End : TextAlignment.Center),
+                    Padding = 0,
+                    Margin = 0
+                }
+            };
         }
 
         private void OnCellTapped(int index)

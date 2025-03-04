@@ -16,15 +16,6 @@
 
         <Grid RowDefinitions="Auto,Auto,*"
               ColumnDefinitions="Auto,*">
-            <!-- Column Hints -->
-            <HorizontalStackLayout Grid.Row="0" Grid.Column="1" HorizontalOptions="Center">
-                <Label Text="{Binding ColumnHintsString}" FontSize="Small" />
-            </HorizontalStackLayout>
-
-            <!-- Row Hints and Game Grid -->
-            <HorizontalStackLayout Grid.Row="1" Grid.Column="0" VerticalOptions="Center">
-                <Label Text="{Binding RowHintsString}" FontSize="Small" />
-            </HorizontalStackLayout>
 
             <ContentView Grid.Row="1" Grid.Column="1" Content="{Binding GameGrid}" />
         </Grid>
