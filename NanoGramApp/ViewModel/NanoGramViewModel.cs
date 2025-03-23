@@ -1,6 +1,7 @@
 ﻿using NanoGramApp.Model;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,41 +12,64 @@ namespace NanoGramApp.ViewModel
 {
     internal class NanoGramViewModel : ObservableObject
     {
+        #region Fields
         private const int BoardSize = 5;
         private const int Lives = 20;
         private readonly GameBoard game;
+        private string _gameStatus;
+        #endregion
+
+        #region Properties
+        private static readonly Dictionary<string, (Color BackGroundColor, Color FontColor)> colorMacher =
+            new Dictionary<string, (Color, Color)>
+        {
+                { "█", (Colors.Black, Colors.Black) },
+                { "X", (Colors.Transparent, Colors.Black)},
+                {"Wrong█", (Colors.Black, Colors.Black)},
+                {"WrongX", (Colors.Transparent, Colors.Red) },
+        };
 
         public Grid? GameGrid { get; private set; }
-        public string? gameStatus { get; private set; }
         public string Flag => (game.Flag ? "█" : "X");
 
-
-        public string? GameStatus
+        public string GameStatus
         {
-            get => gameStatus;
+            get { return _gameStatus; }
             set
             {
-                if (gameStatus != value)
+                if (_gameStatus != value)
                 {
-                    gameStatus = value;
-                    OnPropertyChanged();
+                    _gameStatus = value;
+                    OnPropertyChanged();  // Notify that the GameStatus has changed
                 }
             }
         }
+        #endregion
+
+        #region Commands
         public ICommand? CellTappedCommand { get; }
         public ICommand? ToggleModeCommand { get; }
+        #endregion
 
-
-
+        #region Constructor
         public NanoGramViewModel()
         {
             game = new GameBoard(BoardSize, Lives);
-
-            gameStatus = "Nothing is clicked";
+            game.PropertyChanged += (sender, e) =>
+            {
+                if (e.PropertyName == nameof(GameBoard.GameStatus))
+                {
+                    GameStatus = game.GameStatus;  // Update ViewModel's GameStatus when GameBoard's GameStatus changes
+                }
+            };
+            //gameStatus = "Nothing is clicked";
             CellTappedCommand = new Command<int>(OnCellTapped);
             ToggleModeCommand = new Command(OnToggleMode);
             GameGrid = GenerateDynamicGrid();
         }
+        #endregion
+
+        #region BoardMaker
         private Grid GenerateDynamicGrid()
         {
             var grid = new Grid
@@ -62,7 +86,7 @@ namespace NanoGramApp.ViewModel
                     // Row Definitions
                     if (i == 0) // First row for column hints
                     {
-                        grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(BoardSize *0.24, GridUnitType.Star) }); // Flexible height for the first row
+                        grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(BoardSize * 0.24, GridUnitType.Star) }); // Flexible height for the first row
                     }
                     else
                     {
@@ -72,7 +96,7 @@ namespace NanoGramApp.ViewModel
                     // Column Definitions
                     if (i == 0) // First column for row hints
                     {
-                        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(BoardSize *0.24, GridUnitType.Star) }); // Flexible width for the first column
+                        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(BoardSize * 0.24, GridUnitType.Star) }); // Flexible width for the first column
                     }
                     else
                     {
@@ -86,7 +110,7 @@ namespace NanoGramApp.ViewModel
             for (int i = 1; i <= BoardSize; i++) // Start at 1 to skip (0,0)
             {
                 // Column Hint (Above the Grid)
-                Frame colHint = CreateHintCell(i-1, true);
+                Frame colHint = CreateHintCell(i - 1, true);
                 Grid.SetRow(colHint, 0);
                 Grid.SetColumn(colHint, i);
                 //colHint.HeightRequest = CalculateHintHeight(game.Columns[i - 1].Count);
@@ -94,7 +118,7 @@ namespace NanoGramApp.ViewModel
                 grid.Children.Add(colHint);
 
                 // Row Hint (Left of the Grid)
-                Frame rowHint = CreateHintCell(i-1, false);
+                Frame rowHint = CreateHintCell(i - 1, false);
                 Grid.SetRow(rowHint, i);
                 Grid.SetColumn(rowHint, 0);
 
@@ -119,7 +143,8 @@ namespace NanoGramApp.ViewModel
                         Padding = 0,
                         Margin = 0
                     };
-
+                    //button.SetBinding(Button.BackgroundColorProperty, "ButtonColor");
+                    //button.SetBinding(Button.TextColorProperty, "TextColor");
                     button.SetBinding(Button.TextProperty, "Value");
                     button.SetBinding(Button.IsEnabledProperty, "IsEnabled");
                     button.Command = CellTappedCommand;
@@ -183,27 +208,64 @@ namespace NanoGramApp.ViewModel
                 }
             };
         }
+        #endregion
 
-
+        #region Functions
         private void OnCellTapped(int index)
         {
             int row = index / BoardSize;
             int col = index % BoardSize;
-            
-
-            if (game.Guess(row, col))
-            {
-                GameStatus = game.GameStatus;
-                OnPropertyChanged(nameof(GameStatus));
-            }
+            string color = (game.Guess(row, col) ? "Wrong" : string.Empty) + (game.GuessdBoard[row, col].Value);
+            Color(row, col, color);
+            CheckX(row, col);
         }
 
+        private void CheckX(int row, int col)
+        {
+            if (game.CheckRow(row))
+            {
+                for (int i = 0; i < BoardSize; i++)
+                {
+                    if (game.GuessdBoard[row, i].IsEnabled && game.GuessdBoard[row, i ].Value != "█")
+                        Color(row, i, "X");
+                    
+                }
+            }
+            if (game.CheckColumn(col))
+            {
+                for (int i = 0; i < BoardSize; i++)
+                {
+                    if (game.GuessdBoard[i, col].IsEnabled && game.GuessdBoard[i, col].Value != "█")
+                        Color(i, col, "X");
+                    
+                }
+            }
+            game.CheckWin();
+        }
+
+        private void Color(int row, int col, string str)
+        {
+            Console.WriteLine(str);
+            var button = GameGrid.Children
+                        .OfType<Button>()
+                        .FirstOrDefault(b => Grid.GetRow(b) == row + 1 && Grid.GetColumn(b) == col + 1);
 
 
+            if (button != null)
+            {
+                game.DisableCell(row, col);
+                button.IsEnabled = false;
+                // Disable the button and change its background to red
+                var (backgroundColor, textColor) = colorMacher[str];
+                button.BackgroundColor = backgroundColor;
+                button.TextColor = textColor;
+            }
+        }
         private void OnToggleMode()
         {
             game.ToggleMode();
             OnPropertyChanged(nameof(Flag)); // Notify UI of change
         }
+        #endregion
     }
 }

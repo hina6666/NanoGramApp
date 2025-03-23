@@ -9,11 +9,15 @@ using System.Threading.Tasks;
 
 namespace NanoGramApp.Model
 {
-    internal class GameBoard 
+    internal class GameBoard : ObservableObject
     {
+        #region Fields
         private int Lives;
         private bool[,] Board;
         public int BoardSize;
+        private string _gameStatus;
+        #endregion
+
         #region Properties
         public Cell[,] GuessdBoard { get; private set; }
 
@@ -21,7 +25,18 @@ namespace NanoGramApp.Model
         public List<int>[] Rows { get; private set; }
         public bool Flag { get; private set; }
 
-        public string GameStatus { get; private set; }
+        public string GameStatus
+        {
+            get { return _gameStatus; }
+            set
+            {
+                if (_gameStatus != value)
+                {
+                    _gameStatus = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
         public bool IsGameOver { get; private set; }
 
         #endregion
@@ -143,36 +158,50 @@ namespace NanoGramApp.Model
         public bool Guess(int row, int column) 
         {
             if(IsGameOver || !GuessdBoard[row,column].IsEnabled) return false;
-            GuessdBoard[row, column].Value = Board[row, column] ? "█" : "X";
-            GuessdBoard[row, column].IsEnabled = false;
-            this.CheckRow(row);
-            this.CheckColumn(column);
+            Complete(row, column);
             if (Board[row, column] != Flag)
             {
-                Lives--;
-                GameStatus = "Lives: " + Lives;
+                Wrong();
             }
             if (CheckWin())
             {
                 GameStatus = $"Good Job you won with {Lives} more lives";
-                IsGameOver = true;
                 return true;
-            }
-            else if (Lives == 0)
-            {
-                GameStatus = "You Lost :(";
-                IsGameOver = true;
             }
             return Board[row, column] != Flag;
         }
+        private void Wrong()
+        {
+            Lives--;
+            GameStatus = "Lives: " + Lives;
+            if (Lives == 0)
+            {
+                IsGameOver = true;
+                GameStatus = "You Lost :(";
+            }
+        }
+        private void Complete(int row, int column)
+        {
+            /*
+            if (Board[row, column])
+            {
+                GuessdBoard[row, column].ButtonColor = Colors.Green;  // Correct guess: green color
+            }
+            else
+            {
+                GuessdBoard[row, column].ButtonColor = Colors.Red; // Incorrect guess: red color
+            }*/
 
-        public void CheckRow(int row)
+            GuessdBoard[row, column].Value = Board[row, column] ? "█" : "X"; // Show symbol (█ or X)
+            // Disable the cell
+        }
+        public bool CheckRow(int row)
         {
             for (int i = 0; i < BoardSize; i++)
             {
                 if (Board[row, i] != (GuessdBoard[row, i].Value == "█"))
                 {
-                    return;
+                    return false;
                 }
             }
             for (int i = 0; i < BoardSize; i++)
@@ -180,17 +209,17 @@ namespace NanoGramApp.Model
                 if (GuessdBoard[row, i].IsEnabled && !Board[row, i ])
                 {
                     GuessdBoard[row, i].Value = "X";
-                    GuessdBoard[row, i].IsEnabled = false;
                 }
             }
+            return true;
         }
-        public void CheckColumn(int column)
+        public bool CheckColumn(int column)
         {
             for (int i = 0; i < BoardSize; i++)
             {
                 if (Board[i, column] != (GuessdBoard[i, column].Value == "█"))
                 {
-                    return;
+                    return false;
                 }
             }
             for (int i = 0; i < BoardSize; i++)
@@ -198,15 +227,19 @@ namespace NanoGramApp.Model
                 if (GuessdBoard[i, column].IsEnabled && !Board[i,column])
                 {
                     GuessdBoard[i, column].Value = "X";
-                    GuessdBoard[i, column].IsEnabled = false;
                 }
             }
+            return true;
         }
+
+        public void DisableCell(int row, int col) { GuessdBoard[row, col].IsEnabled = false; }
 
         public bool CheckWin()
         {
             foreach (var cell in GuessdBoard)
-                if (cell.IsEnabled) return false;
+                if (cell.IsEnabled) 
+                    return false;
+                            GameStatus = $"Good Job you won with {Lives} more lives";
             return true;
         }
         public void ToggleMode()

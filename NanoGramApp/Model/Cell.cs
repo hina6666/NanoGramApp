@@ -9,7 +9,7 @@ namespace NanoGramApp.Model
     using System.ComponentModel;
     using System.Runtime.CompilerServices;
 
-    internal class Cell : INotifyPropertyChanged
+    internal class Cell : ObservableObject
     {
         private string? _value;
         private bool _isEnabled = true;
@@ -39,13 +39,5 @@ namespace NanoGramApp.Model
                 }
             }
         }
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
     }
-
 }
