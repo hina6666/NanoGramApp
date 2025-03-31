@@ -13,8 +13,8 @@ namespace NanoGramApp.ViewModel
     internal class NanoGramViewModel : ObservableObject
     {
         #region Fields
-        private const int BoardSize = 5;
-        private const int Lives = 20;
+        private const int BoardSize = 10;
+        private const int Lives = 3;
         private readonly GameBoard game;
         private string _gameStatus;
         #endregion
