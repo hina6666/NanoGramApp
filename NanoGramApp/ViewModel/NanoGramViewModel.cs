@@ -13,8 +13,8 @@ namespace NanoGramApp.ViewModel
     internal class NanoGramViewModel : ObservableObject
     {
         #region Fields
-        private const int BoardSize = 10;
-        private const int Lives = 3;
+        private readonly int BoardSize;
+        private readonly int Lives;
         private readonly GameBoard game;
         private string _gameStatus;
         #endregion
@@ -44,6 +44,7 @@ namespace NanoGramApp.ViewModel
                 }
             }
         }
+        public bool IsGameOver;
         #endregion
 
         #region Commands
@@ -52,9 +53,11 @@ namespace NanoGramApp.ViewModel
         #endregion
 
         #region Constructor
-        public NanoGramViewModel()
+        public NanoGramViewModel(Difficulty difficulty, int lives)
         {
-            game = new GameBoard(BoardSize, Lives);
+            game = new GameBoard(difficulty, lives);
+            Lives = lives;
+            BoardSize = game.BoardSize;
             game.PropertyChanged += (sender, e) =>
             {
                 if (e.PropertyName == nameof(GameBoard.GameStatus))
@@ -215,7 +218,9 @@ namespace NanoGramApp.ViewModel
         {
             int row = index / BoardSize;
             int col = index % BoardSize;
+            if (game.IsGameOver || !game.GuessdBoard[row, col].IsEnabled) { return; }
             string color = (game.Guess(row, col) ? "Wrong" : string.Empty) + (game.GuessdBoard[row, col].Value);
+            Console.WriteLine("in OnCell Tapeed");
             Color(row, col, color);
             CheckX(row, col);
         }
@@ -228,7 +233,6 @@ namespace NanoGramApp.ViewModel
                 {
                     if (game.GuessdBoard[row, i].IsEnabled && game.GuessdBoard[row, i ].Value != "█")
                         Color(row, i, "X");
-                    
                 }
             }
             if (game.CheckColumn(col))
@@ -237,7 +241,6 @@ namespace NanoGramApp.ViewModel
                 {
                     if (game.GuessdBoard[i, col].IsEnabled && game.GuessdBoard[i, col].Value != "█")
                         Color(i, col, "X");
-                    
                 }
             }
             game.CheckWin();

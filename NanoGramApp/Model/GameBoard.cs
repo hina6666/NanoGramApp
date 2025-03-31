@@ -9,12 +9,19 @@ using System.Threading.Tasks;
 
 namespace NanoGramApp.Model
 {
+    public enum Difficulty
+    {
+        Easy,
+        Medium,
+        Hard
+    }
     internal class GameBoard : ObservableObject
     {
         #region Fields
         private int Lives;
         private bool[,] Board;
         public int BoardSize;
+        public double Density;
         private string _gameStatus;
         #endregion
 
@@ -42,9 +49,9 @@ namespace NanoGramApp.Model
         #endregion
 
         #region Constractor
-        public GameBoard(int boardSize, int lives)
+        public GameBoard(Difficulty difficulty, int lives)
         {
-            BoardSize = boardSize;
+            this.SetDifficulty(difficulty);
             this.GenrateBoard();
             this.GenerateRow();
             this.GenerateColumn();
@@ -72,7 +79,7 @@ namespace NanoGramApp.Model
                 hasTrue = false;
                 for (int j = 0; j < BoardSize; j++)
                 {
-                    Board[i, j] = rand.Next(0, 2) == 1;
+                    Board[i, j] = rand.NextDouble() < Density;
                     if (Board[i, j])
                     {
                         hasTrue = true;
@@ -239,12 +246,33 @@ namespace NanoGramApp.Model
             foreach (var cell in GuessdBoard)
                 if (cell.IsEnabled) 
                     return false;
-                            GameStatus = $"Good Job you won with {Lives} more lives";
+
+            GameStatus = $"Good Job you won with {Lives} more lives";
+            IsGameOver = true;
             return true;
         }
         public void ToggleMode()
         {
             Flag = !Flag;
+        }
+
+        private void SetDifficulty(Difficulty difficulty)
+        {
+            switch (difficulty)
+            {
+                case Difficulty.Easy:
+                    BoardSize = 5;
+                    Density = 0.5;
+                    break;
+                case Difficulty.Medium:
+                    BoardSize = 10;
+                    Density = 0.6;
+                    break;
+                case Difficulty.Hard:
+                    BoardSize = 15;
+                    Density = 0.7;
+                    break;
+            }
         }
         #endregion
     }
