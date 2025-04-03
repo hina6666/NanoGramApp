@@ -2,22 +2,61 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="NanoGramApp.View.LoadGamePage"
-             Title="LoadGamePage">
-    <VerticalStackLayout>
-        <Label 
-            Text="Welcome to the NanoGramGame89"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
+             Title="LoadGamePage"
+             BackgroundColor="#121212"
+             BackgroundImageSource="grid_background.png">
 
-        <Button
-            Grid.Row="2"
-            Background="Green"
-            BorderColor="Blue"
-            BorderWidth="5"
-            Command="{Binding GoToGameCommand}"
-            CornerRadius="5"
-            HeightRequest="60"
-            Text="Add"
-            WidthRequest="250" />
-    </VerticalStackLayout>
+    <Grid RowDefinitions="Auto, Auto, *" ColumnDefinitions="*" Margin="0,100,0,0">
+        <!-- Background Grid Design -->
+        <!-- Title Section -->
+        <VerticalStackLayout Spacing="20" Padding="20" VerticalOptions="Center" HorizontalOptions="Center" Grid.Row="0">
+            <Label 
+                Text="Welcome to NanoGramGame!"
+                FontSize="30"
+                TextColor="#FFFFFF"
+                FontAttributes="Bold"
+                HorizontalTextAlignment="Center" />
+        </VerticalStackLayout>
+
+        <!-- Main Button Section -->
+        <VerticalStackLayout Spacing="15" Padding="20" HorizontalOptions="Center" Grid.Row="1">
+            <Frame HasShadow="True" Padding="0" BackgroundColor="Transparent" CornerRadius="30">
+                <Button
+                    Text="Start Game"
+                    Command="{Binding GoToGameCommand}"
+                    WidthRequest="250"
+                    HeightRequest="60"
+                    BackgroundColor="#1DB954"
+                    TextColor="White"
+                    FontSize="18"
+                    CornerRadius="30"
+                    HorizontalOptions="Center"/>
+            </Frame>
+
+            <!-- Secondary Action Button (e.g., Help or Settings) -->
+            <Frame HasShadow="True" Padding="0" BackgroundColor="Transparent" CornerRadius="30">
+                <Button
+                    Text="Settings"
+                    Command="{Binding GoToSettingsCommand}"  
+                    WidthRequest="250"
+                    HeightRequest="60"
+                    BackgroundColor="#FF4081"
+                    TextColor="White"
+                    FontSize="18"
+                    CornerRadius="30"
+                    HorizontalOptions="Center"/>
+            </Frame>
+        </VerticalStackLayout>
+
+        <!-- Footer Section with an Icon or Text -->
+        <VerticalStackLayout Spacing="10" Padding="20" HorizontalOptions="Center" Grid.Row="2">
+            <Image Source="icon_info.png" WidthRequest="50" HeightRequest="50" HorizontalOptions="Center"/>
+            <Label 
+                Text="Enjoy the game and have fun!" 
+                FontSize="14" 
+                TextColor="#FFFFFF"
+                HorizontalTextAlignment="Center"/>
+        </VerticalStackLayout>
+
+    </Grid>
 </ContentPage>
