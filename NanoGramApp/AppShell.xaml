@@ -3,13 +3,32 @@
     x:Class="NanoGramApp.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:NanoGramApp.View"
     xmlns:local="clr-namespace:NanoGramApp"
     Shell.FlyoutBehavior="Disabled"
     Title="NanoGramApp">
-
+    <!--
     <ShellContent
         Title="Home"
         ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+        Route="MainPage" />-->
+<!--
+    <TabBar >
+        <Tab Title="Game">
+            <ShellContent 
+                ContentTemplate="{DataTemplate views:GamePage}"
+                Route="GamePage"/>
+        </Tab>
+        <Tab Title="LoadGamePage">
+            <ShellContent
+                ContentTemplate="{DataTemplate views:LoadGamePage}"
+                Route="LoadGamePage"/>
+        </Tab>
+        
+    </TabBar>-->
+    <ShellContent
+        ContentTemplate="{DataTemplate views:LoadGamePage}"
+            Route="LoadGamePage">
+    </ShellContent>
 
 </Shell>

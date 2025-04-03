@@ -9,12 +9,6 @@ using System.Threading.Tasks;
 
 namespace NanoGramApp.Model
 {
-    public enum Difficulty
-    {
-        Easy,
-        Medium,
-        Hard
-    }
     internal class GameBoard : ObservableObject
     {
         #region Fields

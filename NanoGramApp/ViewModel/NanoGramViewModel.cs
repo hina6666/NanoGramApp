@@ -13,9 +13,9 @@ namespace NanoGramApp.ViewModel
     internal class NanoGramViewModel : ObservableObject
     {
         #region Fields
-        private readonly int BoardSize;
+        private int BoardSize;
         private readonly int Lives;
-        private readonly GameBoard game;
+        private readonly GameBoard? game;
         private string _gameStatus;
         #endregion
 
@@ -44,7 +44,6 @@ namespace NanoGramApp.ViewModel
                 }
             }
         }
-        public bool IsGameOver;
         #endregion
 
         #region Commands
@@ -53,9 +52,10 @@ namespace NanoGramApp.ViewModel
         #endregion
 
         #region Constructor
-        public NanoGramViewModel(Difficulty difficulty, int lives)
+        public NanoGramViewModel(Difficulty diff, int lives)
         {
-            game = new GameBoard(difficulty, lives);
+            OnPropertyChanged();
+            game = new GameBoard(diff, lives);
             Lives = lives;
             BoardSize = game.BoardSize;
             game.PropertyChanged += (sender, e) =>
@@ -140,8 +140,8 @@ namespace NanoGramApp.ViewModel
                         BindingContext = game.GuessdBoard[row - 1, col - 1],
                         FontSize = 25,
                         BackgroundColor = Colors.Transparent,
-                        BorderColor = Colors.Black,
-                        BorderWidth = 1,
+                        BorderColor = Colors.Grey,
+                        BorderWidth = 0.5,
                         CornerRadius = 0, // 🔹 Makes the button edges square
                         Padding = 0,
                         Margin = 0

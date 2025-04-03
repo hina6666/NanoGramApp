@@ -7,8 +7,7 @@ namespace NanoGramApp
         public App()
         {
             InitializeComponent();
-
-            MainPage = new GamePage();
+            MainPage = new AppShell();
         }
     }
 }
